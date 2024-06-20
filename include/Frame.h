@@ -108,7 +108,7 @@ public:
     // Frame timestamp.
     double mTimeStamp;
 
-    // Calibration matrix and OpenCV distortion parameters.
+    // 标定矩阵 与 OpenCV 失真参数
     cv::Mat mK;
     static float fx;
     static float fy;
@@ -156,8 +156,8 @@ public:
     std::vector<bool> mvbOutlier;
 
     // Keypoints are assigned to cells in a grid to reduce matching complexity when projecting MapPoints.
-    static float mfGridElementWidthInv;
-    static float mfGridElementHeightInv;
+    static float mfGridElementHeightInv;    // 格/像素
+    static float mfGridElementWidthInv;     // 格/像素
     std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];
 
     // Camera pose.

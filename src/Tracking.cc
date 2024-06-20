@@ -164,7 +164,7 @@ void Tracking::SetViewer(Viewer *pViewer)
     mpViewer=pViewer;
 }
 
-
+// 双目
 cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const double &timestamp)
 {
     mImGray = imRectLeft;
@@ -204,7 +204,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
     return mCurrentFrame.mTcw.clone();
 }
 
-// 真正实现【图像 -> 位姿】的函数
+// RGB-D
 cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp)
 {
     mImGray = imRGB;
@@ -235,7 +235,7 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     return mCurrentFrame.mTcw.clone();
 }
 
-
+// 单目
 cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 {
     mImGray = im;
@@ -277,7 +277,7 @@ void Tracking::Track()
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
 
-    if(mState==NOT_INITIALIZED)
+    if(mState==NOT_INITIALIZED) // 未初始化
     {
         if(mSensor==System::STEREO || mSensor==System::RGBD)
             StereoInitialization();
@@ -288,18 +288,15 @@ void Tracking::Track()
 
         if(mState!=OK)
             return;
-    }
-    else
-    {
+    } else {                    // 初始化过了
         // System is initialized. Track Frame.
         bool bOK;
 
         // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
-        if(!mbOnlyTracking)
+        if(!mbOnlyTracking)     // 仅跟踪位姿
         {
             // Local Mapping is activated. This is the normal behaviour, unless
             // you explicitly activate the "only tracking" mode.
-
             if(mState==OK)
             {
                 // Local Mapping might have changed some MapPoints tracked in last frame
@@ -315,14 +312,10 @@ void Tracking::Track()
                     if(!bOK)
                         bOK = TrackReferenceKeyFrame();
                 }
-            }
-            else
-            {
+            } else {
                 bOK = Relocalization();
             }
-        }
-        else
-        {
+        } else {
             // Localization Mode: Local Mapping is deactivated
 
             if(mState==LOST)
@@ -509,7 +502,7 @@ void Tracking::Track()
 
 void Tracking::StereoInitialization()
 {
-    if(mCurrentFrame.N>500)
+    if(mCurrentFrame.N>500) // 关键点数量>500
     {
         // Set Frame pose to the origin
         mCurrentFrame.SetPose(cv::Mat::eye(4,4,CV_32F));

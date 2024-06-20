@@ -36,18 +36,27 @@ Frame::Frame()
 {}
 
 //Copy Constructor
-Frame::Frame(const Frame &frame)
-    :mpORBvocabulary(frame.mpORBvocabulary), mpORBextractorLeft(frame.mpORBextractorLeft), mpORBextractorRight(frame.mpORBextractorRight),
-     mTimeStamp(frame.mTimeStamp), mK(frame.mK.clone()), mDistCoef(frame.mDistCoef.clone()),
-     mbf(frame.mbf), mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), mvKeys(frame.mvKeys),
-     mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn),  mvuRight(frame.mvuRight),
-     mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), mFeatVec(frame.mFeatVec),
-     mDescriptors(frame.mDescriptors.clone()), mDescriptorsRight(frame.mDescriptorsRight.clone()),
-     mvpMapPoints(frame.mvpMapPoints), mvbOutlier(frame.mvbOutlier), mnId(frame.mnId),
-     mpReferenceKF(frame.mpReferenceKF), mnScaleLevels(frame.mnScaleLevels),
-     mfScaleFactor(frame.mfScaleFactor), mfLogScaleFactor(frame.mfLogScaleFactor),
-     mvScaleFactors(frame.mvScaleFactors), mvInvScaleFactors(frame.mvInvScaleFactors),
-     mvLevelSigma2(frame.mvLevelSigma2), mvInvLevelSigma2(frame.mvInvLevelSigma2)
+Frame::Frame(const Frame &frame):
+    mpORBvocabulary(frame.mpORBvocabulary), 
+    mpORBextractorLeft(frame.mpORBextractorLeft), 
+    mpORBextractorRight(frame.mpORBextractorRight),
+    mTimeStamp(frame.mTimeStamp), mK(frame.mK.clone()), 
+    mDistCoef(frame.mDistCoef.clone()), mbf(frame.mbf), 
+    mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), 
+    mvKeys(frame.mvKeys), mvKeysRight(frame.mvKeysRight), 
+    mvKeysUn(frame.mvKeysUn),  mvuRight(frame.mvuRight),
+    mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), 
+    mFeatVec(frame.mFeatVec), mDescriptors(frame.mDescriptors.clone()), 
+    mDescriptorsRight(frame.mDescriptorsRight.clone()),
+    mvpMapPoints(frame.mvpMapPoints), mvbOutlier(frame.mvbOutlier), 
+    mnId(frame.mnId), mpReferenceKF(frame.mpReferenceKF), 
+    mnScaleLevels(frame.mnScaleLevels), 
+    mfScaleFactor(frame.mfScaleFactor), 
+    mfLogScaleFactor(frame.mfLogScaleFactor), 
+    mvScaleFactors(frame.mvScaleFactors), 
+    mvInvScaleFactors(frame.mvInvScaleFactors),
+    mvLevelSigma2(frame.mvLevelSigma2), 
+    mvInvLevelSigma2(frame.mvInvLevelSigma2)
 {
     for(int i=0;i<FRAME_GRID_COLS;i++)
         for(int j=0; j<FRAME_GRID_ROWS; j++)
@@ -116,9 +125,10 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     AssignFeaturesToGrid();
 }
 
-Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
-    :mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
-     mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth)
+Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,
+             ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth):
+    mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
+    mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth)
 {
     // Frame ID
     mnId=nNextId++;
@@ -140,12 +150,12 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeSt
     if(mvKeys.empty())
         return;
 
-    UndistortKeyPoints();
+    UndistortKeyPoints();   // 关键点反扭曲操作
 
     ComputeStereoFromRGBD(imDepth);
 
-    mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));
-    mvbOutlier = vector<bool>(N,false);
+    mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));   // 创建容器存地图点
+    mvbOutlier = vector<bool>(N,false);                                 // 创建容器存不符合的点
 
     // This is done only for the first Frame (or after a change in the calibration)
     if(mbInitialComputations)
@@ -229,6 +239,7 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
 
 void Frame::AssignFeaturesToGrid()
 {
+    // 把一张图片 划分成64x48个网格
     int nReserve = 0.5f*N/(FRAME_GRID_COLS*FRAME_GRID_ROWS);
     for(unsigned int i=0; i<FRAME_GRID_COLS;i++)
         for (unsigned int j=0; j<FRAME_GRID_ROWS;j++)
@@ -239,8 +250,8 @@ void Frame::AssignFeaturesToGrid()
         const cv::KeyPoint &kp = mvKeysUn[i];
 
         int nGridPosX, nGridPosY;
-        if(PosInGrid(kp,nGridPosX,nGridPosY))
-            mGrid[nGridPosX][nGridPosY].push_back(i);
+        if(PosInGrid(kp,nGridPosX,nGridPosY))          // 遍历关键点（像素），得到像素所在网格坐标
+            mGrid[nGridPosX][nGridPosY].push_back(i);  // 把关键点（像素）的索引存入对应的网格中
     }
 }
 
@@ -381,8 +392,8 @@ vector<size_t> Frame::GetFeaturesInArea(const float &x, const float  &y, const f
 
 bool Frame::PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY)
 {
-    posX = round((kp.pt.x-mnMinX)*mfGridElementWidthInv);
-    posY = round((kp.pt.y-mnMinY)*mfGridElementHeightInv);
+    posX = round((kp.pt.x-mnMinX)*mfGridElementWidthInv);   // 得到在x方向的第x格
+    posY = round((kp.pt.y-mnMinY)*mfGridElementHeightInv);  // 得到在y方向的第y格
 
     //Keypoint's coordinates are undistorted, which could cause to go out of the image
     if(posX<0 || posX>=FRAME_GRID_COLS || posY<0 || posY>=FRAME_GRID_ROWS)
@@ -401,7 +412,7 @@ void Frame::ComputeBoW()
     }
 }
 
-void Frame::UndistortKeyPoints()
+void Frame::UndistortKeyPoints()    // 反扭曲
 {
     if(mDistCoef.at<float>(0)==0.0)
     {
@@ -639,7 +650,7 @@ void Frame::ComputeStereoMatches()
     }
 }
 
-
+// 从深度图计算立体图像
 void Frame::ComputeStereoFromRGBD(const cv::Mat &imDepth)
 {
     mvuRight = vector<float>(N,-1);

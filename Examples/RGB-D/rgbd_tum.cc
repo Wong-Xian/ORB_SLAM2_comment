@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 #endif
 
         // 计算时间差
-        double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+        double ttrack= std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
 
         vTimesTrack[ni]=ttrack; // 保存位姿追踪时间差
 
@@ -135,8 +135,12 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");   
+    SLAM.SaveTrajectoryTUM(string(argv[3])+"/CameraTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[3])+"/KeyFrameTrajectory.txt");   
+
+    string final;
+    cout << "wait key" << endl;
+    cin >> final;
 
     return 0;
 }
